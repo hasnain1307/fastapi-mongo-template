@@ -1,0 +1,38 @@
+version: "3"
+
+services:
+
+  mongo_db:
+    image: mongo:latest
+    container_name: mongo_database
+    volumes:
+      - ./data/mongo:/data/db
+    environment:
+      - DB_NAME=${DB_NAME}
+      - MONGO_INITDB_ROOT_USERNAME=${DB_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${DB_PASSWORD}
+
+  bot-service:
+    build:
+      context: bot-configuration-service
+      dockerfile: Dockerfile
+    container_name: bot_configuration_service
+    command: ./run_botconfig.sh
+    volumes:
+      - ./bot-configuration-service:/bot_configuration
+    ports:
+      - ${BOT_SERVER_PORT}:${BOT_SERVER_PORT}
+    depends_on:
+      - mongo_db
+    environment:
+      - BOT_SERVER_PORT=${BOT_SERVER_PORT}
+      - DATABASE_DB=${DB_NAME}
+      - DATABASE_USER=${DB_USERNAME}
+      - DATABASE_PASSWORD=${DB_PASSWORD}
+      - DATABASE_HOST=mongo_db
+      - DATABASE_PORT=27017
+      - LOG_TO_FILE=${LOG_TO_FILE}
+      - LOG_TO_CONSOLE=${LOG_TO_CONSOLE}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - LOG_FILE_PATH=${LOG_FILE_PATH}
+      - TZ=${TIMEZONE}
