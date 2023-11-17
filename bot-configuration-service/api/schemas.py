@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class ResourceCreatedResponse(BaseModel):
     detail: str
-    id: int
+    id: str
 
 
 class ResourceDeletedResponse(BaseModel):

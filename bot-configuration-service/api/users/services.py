@@ -4,8 +4,8 @@ from api.base_service import BaseService
 
 
 class UserService(BaseService):
-    def __init__(self, db_object):
-        super().__init__(collection_name="users", db_object=db_object)
+    def __init__(self, bot_config_db):
+        super().__init__(collection_name="users", db_object=bot_config_db)
 
     async def user_exists(self, username: Optional[str] = None, email: Optional[str] = None) -> bool | ValueError:
         """Check if user exists"""

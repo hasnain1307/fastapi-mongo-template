@@ -17,7 +17,7 @@ services:
       context: bot-configuration-service
       dockerfile: Dockerfile
     container_name: bot_configuration_service
-    command: ./run_botconfig.sh
+    command: ./run_server.sh
     volumes:
       - ./bot-configuration-service:/bot_configuration
     ports:

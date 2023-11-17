@@ -1,16 +1,9 @@
-import motor.motor_asyncio
 from config.urls import urls
-
-# # Your MongoDB models
-# from .models import Users, Bots, Tenants
+from .create_database import MongoDBClient
+from .base_model import BaseMongoModel, CreateSchemaType
+from .models import TenantModel
 
 # Create an asynchronous MongoClient
-db_client = motor.motor_asyncio.AsyncIOMotorClient(urls.mongo_database_conn_str)
-
-# Select your database
-db_object = db_client["bot_configuration"]  # Replace with your database name
-
-# Initialize asynchronous collections
-users_collection = db_object["users"]
-bots_collection = db_object["bots"]
-tenants_collection = db_object["tenants"]
+db_client = MongoDBClient(urls.mongo_database_conn_str)
+mongo_client = db_client.db_client
+bot_config_db = db_client.db_name

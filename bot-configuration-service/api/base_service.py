@@ -1,30 +1,33 @@
-from typing import Generic, Optional, TypeVar
+from typing import Generic, Optional, TypeVar, Type
+from bson import ObjectId
 
 from pydantic import BaseModel
 from motor.motor_asyncio import AsyncIOMotorDatabase
-
+from database import BaseMongoModel
 from api.exceptions import ObjectNotFoundException, UniqueKeyViolationException
 
-ModelType = TypeVar("ModelType", bound=BaseModel)
+ModelType = TypeVar("ModelType", bound=BaseMongoModel)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=BaseModel)
 
 
 class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
-    def __init__(self, collection_name: str, db_object: AsyncIOMotorDatabase):
+    def __init__(self, model: Type[ModelType], collection_name: str, db_object: AsyncIOMotorDatabase):
+        self.model = model
+        self.db = db_object
         self.collection = db_object[collection_name]
 
     async def get(self, id: str) -> Optional[ModelType]:
-        obj = await self.collection.find_one({"_id": id, "is_deleted": False})
+        obj = await self.collection.find_one({"_id": ObjectId(id), "is_deleted": False})
         if obj is None:
             raise ObjectNotFoundException(status_code=404, detail="Not Found")
-        return obj
+        return self.model.from_mongo(obj)
 
     async def list(self) -> list[ModelType]:
         objs = []
         cursor = self.collection.find({"is_deleted": False})
         async for obj in cursor:
-            objs.append(obj)
+            objs.append(self.model.from_mongo(obj))  # Convert each MongoDB document
         return objs
 
     async def create(self, obj_in: CreateSchemaType) -> ModelType:
@@ -39,4 +42,12 @@ class BaseService(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return await self.get(id)
 
     async def delete(self, id: str) -> None:
-        await self.collection.update_one({"_id": id}, {"$set": {"is_deleted": True}})
+        collection_names = await self.db.list_collection_names()
+
+        # Iterate over each collection and set is_deleted to True for documents with the given id
+        for collection_name in collection_names:
+            collection = self.db[collection_name]
+            await collection.update_many({"reference_id": ObjectId(id)}, {"$set": {"is_deleted": True}})
+
+        # Additionally, update the specific collection of this BaseService instance
+        await self.collection.update_one({"_id": ObjectId(id)}, {"$set": {"is_deleted": True}})

@@ -2,7 +2,6 @@ from pydantic import BaseModel, Field, validator
 
 
 class InUserSchema(BaseModel):
-    # id: str = str(uuid.uuid4())
     name: str = Field(...)
     username: str = Field(...)
     email: str = Field(...)

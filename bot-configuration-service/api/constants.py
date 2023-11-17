@@ -1,7 +1,3 @@
-LANGUAGES = ["English", "Roman Urdu", "Urdu"]
-CHANNELS = ["Facebook", "Web", "WhatsApp"]
-
-
 class ErrorCodes:
     AUTHENTICATION_REQUIRED = "Authentication required."
     AUTHORIZATION_FAILED = "Authorization failed. User has no access."

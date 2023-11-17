@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, status
+
 from logger import logger
 from api.constants import ErrorCodes
 from api.exceptions import ObjectNotFoundException, UniqueKeyViolationException
@@ -37,7 +38,6 @@ async def create_tenant(tenant: InTenantSchema, tenant_service: TenantService = 
     if await tenant_service.tenant_exists(name=tenant.name):
         logger.debug(f"Tenant with this name {tenant.name} already exists. Throwing 409 Conflict error")
         raise UniqueKeyViolationException(status_code=status.HTTP_409_CONFLICT, detail=ErrorCodes.TENANT_ALREADY_EXISTS)
-
     new_tenant = await tenant_service.create(tenant)
     logger.info(f"Tenant created with id: {new_tenant.id}")
     return ResourceCreatedResponse(detail="Tenant created successfully", id=new_tenant.id)
